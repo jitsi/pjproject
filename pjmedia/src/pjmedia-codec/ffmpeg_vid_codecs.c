@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010-2011 Teluu Inc. (http://www.teluu.com)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -85,13 +85,13 @@
 static pj_status_t ffmpeg_test_alloc( pjmedia_vid_codec_factory *factory, 
                                       const pjmedia_vid_codec_info *id );
 static pj_status_t ffmpeg_default_attr( pjmedia_vid_codec_factory *factory, 
-                                        const pjmedia_vid_codec_info *info, 
+                                        const pjmedia_vid_codec_info *info,
                                         pjmedia_vid_codec_param *attr );
 static pj_status_t ffmpeg_enum_codecs( pjmedia_vid_codec_factory *factory, 
-                                       unsigned *count, 
+                                       unsigned *count,
                                        pjmedia_vid_codec_info codecs[]);
 static pj_status_t ffmpeg_alloc_codec( pjmedia_vid_codec_factory *factory, 
-                                       const pjmedia_vid_codec_info *info, 
+                                       const pjmedia_vid_codec_info *info,
                                        pjmedia_vid_codec **p_codec);
 static pj_status_t ffmpeg_dealloc_codec( pjmedia_vid_codec_factory *factory, 
                                          pjmedia_vid_codec *codec );
@@ -182,7 +182,7 @@ typedef struct ffmpeg_private
     unsigned                         enc_processed;
     void                            *dec_buf;
     unsigned                         dec_buf_size;
-    pj_timestamp                     last_dec_keyframe_ts; 
+    pj_timestamp                     last_dec_keyframe_ts;
 
     /* The ffmpeg codec states. */
     const AVCodec                   *enc;
@@ -194,7 +194,7 @@ typedef struct ffmpeg_private
      * may be needed for post-decoding.
      */
     enum AVPixelFormat               expected_dec_fmt;
-                                                /**< Expected output format of 
+                                                /**< Expected output format of
                                                      ffmpeg decoder         */
 
     void                            *data;      /**< Codec specific data    */
@@ -292,15 +292,15 @@ static ffmpeg_codec_desc codec_desc[] =
 {
 #if PJMEDIA_HAS_FFMPEG_CODEC_H264
     {
-        {PJMEDIA_FORMAT_H264, AVC_H264_PT, {"H264",4},
-         {"Constrained Baseline (level=30, pack=1)", 39}},
-        0,
-        {720, 480},     {15, 1},        256000, 256000,
-        &h264_packetize, &h264_unpacketize, &h264_preopen, &h264_postopen,
-        &pjmedia_vid_codec_h264_match_sdp,
-        /* Leading space for better compatibility (strange indeed!) */
-        {2, { {{"profile-level-id",16},    {"42e01e",6}}, 
-              {{" packetization-mode",19},  {"1",1}}, } },
+	{PJMEDIA_FORMAT_H264, PJMEDIA_RTP_PT_H264, {"H264",4},
+	 {"Constrained Baseline (level=31, pack=1)", 39}},
+	0,
+	{1280, 720},	{30, 1},	2500000, 2500000,
+	&h264_packetize, &h264_unpacketize, &h264_preopen, &h264_postopen,
+	&pjmedia_vid_codec_h264_match_sdp,
+	/* Leading space for better compatibility (strange indeed!) */
+	{2, { {{"profile-level-id",16},    {"42801f",6}},
+	      {{" packetization-mode",19},  {"1",1}}, } },
     },
 #endif
 
@@ -311,7 +311,7 @@ static ffmpeg_codec_desc codec_desc[] =
         0,
         {720, 480},     {15, 1},        256000, 256000,
         &vpx_packetize, &vpx_unpacketize, &vpx_preopen, &vpx_postopen, NULL,
-        {2, { {{"max-fr",6},   {"30",2}}, 
+        {2, { {{"max-fr",6},   {"30",2}},
               {{" max-fs",7},  {"580",3}}, } },
     },
 #endif
@@ -323,7 +323,7 @@ static ffmpeg_codec_desc codec_desc[] =
         0,
         {720, 480},     {15, 1},        256000, 256000,
         &vpx_packetize, &vpx_unpacketize, &vpx_preopen, &vpx_postopen, NULL,
-        {2, { {{"max-fr",6},   {"30",2}}, 
+        {2, { {{"max-fr",6},   {"30",2}},
               {{" max-fs",7},  {"580",3}}, } },
     },
 #endif
@@ -334,7 +334,7 @@ static ffmpeg_codec_desc codec_desc[] =
         PJMEDIA_FORMAT_H263,
         {352, 288},     {15, 1},        256000, 256000,
         &h263_packetize, &h263_unpacketize, &h263_preopen, NULL, NULL,
-        {2, { {{"CIF",3},   {"1",1}}, 
+        {2, { {{"CIF",3},   {"1",1}},
               {{"QCIF",4},  {"1",1}}, } },
     },
 #endif
@@ -513,7 +513,7 @@ static pj_status_t h264_preopen(ffmpeg_private *ff)
         AVCodecContext *ctx = ff->enc_ctx;
         const char *profile = NULL;
 
-        vfd = pjmedia_format_get_video_format_detail(&ff->param->enc_fmt, 
+        vfd = pjmedia_format_get_video_format_detail(&ff->param->enc_fmt,
                                                      PJ_TRUE);
 
         /* Override generic params after applying SDP fmtp */
@@ -564,15 +564,15 @@ static pj_status_t h264_preopen(ffmpeg_private *ff)
             PJ_LOG(3, (THIS_FILE, "Failed to set x264 intra-refresh"));
         }
 
-        /* Misc x264 settings (performance, quality, latency, etc).
-         * Let's just use the x264 predefined preset & tune.
-         */
-        if (!AV_OPT_SET(ctx->priv_data, "preset", "veryfast", 0)) {
-            PJ_LOG(3, (THIS_FILE, "Failed to set x264 preset 'veryfast'"));
-        }
-        if (!AV_OPT_SET(ctx->priv_data, "tune", "animation+zerolatency", 0)) {
-            PJ_LOG(3, (THIS_FILE, "Failed to set x264 tune 'zerolatency'"));
-        }
+	/* Misc x264 settings (performance, quality, latency, etc).
+	 * Let's just use the x264 predefined preset & tune.
+	 */
+	if (!AV_OPT_SET(ctx->priv_data, "preset", "ultrafast", 0)) {
+	    PJ_LOG(3, (THIS_FILE, "Failed to set x264 preset 'ultrafast'"));
+	}
+	if (!AV_OPT_SET(ctx->priv_data, "tune", "zerolatency", 0)) {
+	    PJ_LOG(3, (THIS_FILE, "Failed to set x264 tune 'zerolatency'"));
+	}
     }
 
     if (ff->param->dir & PJMEDIA_DIR_DECODING) {
@@ -658,7 +658,7 @@ static pj_status_t h263_preopen(ffmpeg_private *ff)
         pjmedia_video_format_detail *vfd;
         AVCodecContext *ctx = ff->enc_ctx;
 
-        vfd = pjmedia_format_get_video_format_detail(&ff->param->enc_fmt, 
+        vfd = pjmedia_format_get_video_format_detail(&ff->param->enc_fmt,
                                                      PJ_TRUE);
 
         /* Override generic params after applying SDP fmtp */
@@ -756,7 +756,7 @@ static void init_codec(AVCodec *c, pj_bool_t is_encoder,
         return;
 
     codec_info_idx = find_codec_idx_by_fmt_id(fmt_id);
-    /* Skip if codec is unwanted by this wrapper (not listed in 
+    /* Skip if codec is unwanted by this wrapper (not listed in
      * the codec info array)
      */
     if (codec_info_idx < 0)
@@ -820,14 +820,14 @@ static void init_codec(AVCodec *c, pj_bool_t is_encoder,
         }
 
         desc->info.dec_fmt_id_cnt = raw_fmt_cnt;
-        pj_memcpy(desc->info.dec_fmt_id, raw_fmt, 
+        pj_memcpy(desc->info.dec_fmt_id, raw_fmt,
                   sizeof(raw_fmt[0])*raw_fmt_cnt);
     }
 
     /* Get supported framerates */
     if (c->supported_framerates) {
         const AVRational *fr = c->supported_framerates;
-        while ((fr->num != 0 || fr->den != 0) && 
+        while ((fr->num != 0 || fr->den != 0) &&
                 desc->info.fps_cnt < PJMEDIA_VID_CODEC_MAX_FPS_CNT)
         {
             desc->info.fps[desc->info.fps_cnt].num = fr->num;
@@ -897,7 +897,7 @@ PJ_DEF(pj_status_t) pjmedia_codec_ffmpeg_vid_init(pjmedia_vid_codec_mgr *mgr,
         return PJ_ENOMEM;
 
     /* Create mutex. */
-    status = pj_mutex_create_simple(pool, "ffmpeg codec factory", 
+    status = pj_mutex_create_simple(pool, "ffmpeg codec factory",
                                     &ffmpeg_factory.mutex);
     if (status != PJ_SUCCESS)
         goto on_error;
@@ -905,7 +905,7 @@ PJ_DEF(pj_status_t) pjmedia_codec_ffmpeg_vid_init(pjmedia_vid_codec_mgr *mgr,
     pjmedia_ffmpeg_add_ref();
 #if !LIBAVCODEC_VER_AT_LEAST(53,20)
     /* avcodec_init() dissappeared between version 53.20 and 54.15, not sure
-     * exactly when 
+     * exactly when
      */
     avcodec_init();
 #endif
@@ -957,12 +957,12 @@ PJ_DEF(pj_status_t) pjmedia_codec_ffmpeg_vid_init(pjmedia_vid_codec_mgr *mgr,
             /* Copy description from base codec */
             if (!desc->info.dec_fmt_id_cnt) {
                 desc->info.dec_fmt_id_cnt = base_desc->info.dec_fmt_id_cnt;
-                pj_memcpy(desc->info.dec_fmt_id, base_desc->info.dec_fmt_id, 
+                pj_memcpy(desc->info.dec_fmt_id, base_desc->info.dec_fmt_id,
                           sizeof(pjmedia_format_id)*desc->info.dec_fmt_id_cnt);
             }
             if (!desc->info.fps_cnt) {
                 desc->info.fps_cnt = base_desc->info.fps_cnt;
-                pj_memcpy(desc->info.fps, base_desc->info.fps, 
+                pj_memcpy(desc->info.fps, base_desc->info.fps,
                           sizeof(desc->info.fps[0])*desc->info.fps_cnt);
             }
             if (!desc->info.clock_rate) {
@@ -1089,7 +1089,7 @@ static pj_status_t ffmpeg_test_alloc( pjmedia_vid_codec_factory *factory,
  * Generate default attribute.
  */
 static pj_status_t ffmpeg_default_attr( pjmedia_vid_codec_factory *factory, 
-                                        const pjmedia_vid_codec_info *info, 
+                                        const pjmedia_vid_codec_info *info,
                                         pjmedia_vid_codec_param *attr )
 {
     const ffmpeg_codec_desc *desc;
@@ -1149,7 +1149,7 @@ static pj_status_t ffmpeg_default_attr( pjmedia_vid_codec_factory *factory,
  * Enum codecs supported by this factory.
  */
 static pj_status_t ffmpeg_enum_codecs( pjmedia_vid_codec_factory *factory,
-                                       unsigned *count, 
+                                       unsigned *count,
                                        pjmedia_vid_codec_info codecs[])
 {
     unsigned i, max_cnt;
@@ -1162,7 +1162,7 @@ static pj_status_t ffmpeg_enum_codecs( pjmedia_vid_codec_factory *factory,
 
     for (i=0; i<max_cnt; ++i) {
         if (codec_desc[i].enabled) {
-            pj_memcpy(&codecs[*count], &codec_desc[i].info, 
+            pj_memcpy(&codecs[*count], &codec_desc[i].info,
                       sizeof(pjmedia_vid_codec_info));
             (*count)++;
         }
@@ -1285,7 +1285,7 @@ static pj_status_t open_ffmpeg_codec(ffmpeg_private *ff,
     ff->expected_dec_fmt = pix_fmt;
 
     /* Get video format detail for shortcut access to encoded format */
-    vfd = pjmedia_format_get_video_format_detail(&ff->param->enc_fmt, 
+    vfd = pjmedia_format_get_video_format_detail(&ff->param->enc_fmt,
                                                  PJ_TRUE);
 
     /* Allocate ffmpeg codec context */
@@ -1722,12 +1722,12 @@ static pj_status_t ffmpeg_codec_encode_begin(pjmedia_vid_codec *codec,
         whole_frm.buf = ff->enc_buf;
         whole_frm.size = ff->enc_buf_size;
         status = ffmpeg_codec_encode_whole(codec, opt, input,
-                                           (unsigned)whole_frm.size, 
+                                           (unsigned)whole_frm.size,
                                            &whole_frm);
         if (status != PJ_SUCCESS)
             return status;
 
-        ff->enc_buf_is_keyframe = (whole_frm.bit_info & 
+        ff->enc_buf_is_keyframe = (whole_frm.bit_info &
                                    PJMEDIA_VID_FRM_KEYFRAME);
         ff->enc_frame_len = (unsigned)whole_frm.size;
         ff->enc_processed = 0;
@@ -1792,7 +1792,7 @@ static pj_status_t check_decode_result(pjmedia_vid_codec *codec,
         pj_status_t status;
 
         /* Get current raw format id from ffmpeg decoder context */
-        status = PixelFormat_to_pjmedia_format_id(ff->dec_ctx->pix_fmt, 
+        status = PixelFormat_to_pjmedia_format_id(ff->dec_ctx->pix_fmt,
                                                   &new_fmt_id);
         if (status != PJ_SUCCESS)
             return status;

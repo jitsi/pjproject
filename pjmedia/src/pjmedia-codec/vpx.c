@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C)2019 Teluu Inc. (http://www.teluu.com)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -47,13 +47,13 @@
 #  define DEFAULT_WIDTH         352
 #  define DEFAULT_HEIGHT        288
 #else
-#  define DEFAULT_WIDTH         720
-#  define DEFAULT_HEIGHT        480
+#  define DEFAULT_WIDTH		1280
+#  define DEFAULT_HEIGHT	720
 #endif
 
-#define DEFAULT_FPS             15
-#define DEFAULT_AVG_BITRATE     200000
-#define DEFAULT_MAX_BITRATE     200000
+#define DEFAULT_FPS		30
+#define DEFAULT_AVG_BITRATE	2500000
+#define DEFAULT_MAX_BITRATE	2500000
 
 #define MAX_RX_RES              1200
 
@@ -606,7 +606,7 @@ static pj_status_t vpx_codec_encode_begin(pjmedia_vid_codec *codec,
                 vpx_data->enc_frame_is_keyframe = PJ_TRUE;
             else
                 vpx_data->enc_frame_is_keyframe = PJ_FALSE;
-                
+
             break;
         }
     } while (1);
@@ -817,7 +817,7 @@ static pj_status_t vpx_codec_decode_(pjmedia_vid_codec *codec,
     }
 
     output->size = pos;
-        
+
 on_return:
     if (!has_frame) {
         pjmedia_event event;
