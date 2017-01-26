@@ -47,15 +47,15 @@
 #  define DEFAULT_WIDTH         352
 #  define DEFAULT_HEIGHT        288
 #else
-#  define DEFAULT_WIDTH         720
-#  define DEFAULT_HEIGHT        480
+#  define DEFAULT_WIDTH         1280
+#  define DEFAULT_HEIGHT        720
 #endif
 
-#define DEFAULT_FPS             15
-#define DEFAULT_AVG_BITRATE     200000
-#define DEFAULT_MAX_BITRATE     200000
+#define DEFAULT_FPS             30
+#define DEFAULT_AVG_BITRATE     2500000
+#define DEFAULT_MAX_BITRATE     2500000
 
-#define MAX_RX_RES              1200
+#define MAX_RX_RES              1280
 
 /* VPX VP8 default PT */
 #define VPX_VP8_PT              PJMEDIA_RTP_PT_VP8

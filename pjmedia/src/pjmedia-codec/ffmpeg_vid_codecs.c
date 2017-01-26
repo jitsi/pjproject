@@ -293,13 +293,13 @@ static ffmpeg_codec_desc codec_desc[] =
 #if PJMEDIA_HAS_FFMPEG_CODEC_H264
     {
         {PJMEDIA_FORMAT_H264, AVC_H264_PT, {"H264",4},
-         {"Constrained Baseline (level=30, pack=1)", 39}},
+         {"Constrained Baseline (level=31, pack=1)", 39}},
         0,
-        {720, 480},     {15, 1},        256000, 256000,
+        {1280, 720},     {30, 1},        2500000, 2500000,
         &h264_packetize, &h264_unpacketize, &h264_preopen, &h264_postopen,
         &pjmedia_vid_codec_h264_match_sdp,
         /* Leading space for better compatibility (strange indeed!) */
-        {2, { {{"profile-level-id",16},    {"42e01e",6}}, 
+        {2, { {{"profile-level-id",16},    {"42801f",6}}, 
               {{" packetization-mode",19},  {"1",1}}, } },
     },
 #endif
@@ -567,10 +567,10 @@ static pj_status_t h264_preopen(ffmpeg_private *ff)
         /* Misc x264 settings (performance, quality, latency, etc).
          * Let's just use the x264 predefined preset & tune.
          */
-        if (!AV_OPT_SET(ctx->priv_data, "preset", "veryfast", 0)) {
-            PJ_LOG(3, (THIS_FILE, "Failed to set x264 preset 'veryfast'"));
+        if (!AV_OPT_SET(ctx->priv_data, "preset", "ultrafast", 0)) {
+            PJ_LOG(3, (THIS_FILE, "Failed to set x264 preset 'ultrafast'"));
         }
-        if (!AV_OPT_SET(ctx->priv_data, "tune", "animation+zerolatency", 0)) {
+        if (!AV_OPT_SET(ctx->priv_data, "tune", "zerolatency", 0)) {
             PJ_LOG(3, (THIS_FILE, "Failed to set x264 tune 'zerolatency'"));
         }
     }

@@ -1171,8 +1171,8 @@ static pj_status_t decode_frame(pjmedia_vid_stream *stream,
                 new_fps.denum = ts_diff;
             }
 
-            /* Only apply the new FPS when it is >0, <=100, and increasing */
-            if (new_fps.num/new_fps.denum <= 100 &&
+            /* Only apply the new FPS when it is >0, <=60, and increasing */
+            if (new_fps.num/new_fps.denum <= 60 &&
                 new_fps.num/new_fps.denum > 0 &&
                 new_fps.num*1.0/new_fps.denum >
                 stream->dec_max_fps.num*1.0/stream->dec_max_fps.denum)
