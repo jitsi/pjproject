@@ -371,7 +371,7 @@ static pj_status_t parse_args(int argc, char *argv[],
 	   OPT_REG_RETRY_INTERVAL, OPT_REG_USE_PROXY,
 	   OPT_MWI, OPT_NAMESERVER, OPT_STUN_SRV, OPT_OUTB_RID,
 	   OPT_ADD_BUDDY, OPT_OFFER_X_MS_MSG, OPT_NO_PRESENCE,
-	   OPT_AUTO_ANSWER, OPT_AUTO_ANSWER_TIMER, OPT_AUTO_PLAY, OPT_AUTO_PLAY_HANGUP, OPT_AUTO_LOOP,
+	   OPT_AUTO_ANSWER, OPT_AUTO_ANSWER_TIMER, OPT_AUTO_KEYFRAME, OPT_AUTO_PLAY, OPT_AUTO_PLAY_HANGUP, OPT_AUTO_LOOP,
 	   OPT_AUTO_CONF, OPT_CLOCK_RATE, OPT_SND_CLOCK_RATE, OPT_STEREO,
 	   OPT_USE_ICE, OPT_ICE_REGULAR, OPT_USE_SRTP, OPT_SRTP_SECURE,
 	   OPT_USE_TURN, OPT_ICE_MAX_HOSTS, OPT_ICE_NO_RTCP, OPT_TURN_SRV,
@@ -454,6 +454,7 @@ static pj_status_t parse_args(int argc, char *argv[],
 	{ "no-presence", 0, 0, OPT_NO_PRESENCE},
 	{ "auto-answer",1, 0, OPT_AUTO_ANSWER},
 	{ "auto-answer-timer",1, 0, OPT_AUTO_ANSWER_TIMER},
+	{ "auto-keyframe",1, 0, OPT_AUTO_KEYFRAME},
 	{ "auto-play",  0, 0, OPT_AUTO_PLAY},
 	{ "auto-play-hangup",0, 0, OPT_AUTO_PLAY_HANGUP},
 	{ "auto-rec",   0, 0, OPT_AUTO_REC},
@@ -1328,8 +1329,13 @@ static pj_status_t parse_args(int argc, char *argv[],
 		return -1;
 	    }
 	    break;
+
 	case OPT_AUTO_ANSWER_TIMER:
 	    cfg->auto_answer_timer = my_atoi(pj_optarg);
+	    break;
+
+	case OPT_AUTO_KEYFRAME:
+	    cfg->auto_keyframe = my_atoi(pj_optarg);
 	    break;
 
         case OPT_MAX_CALLS:

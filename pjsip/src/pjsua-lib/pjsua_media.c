@@ -1448,6 +1448,52 @@ PJ_DEF(pj_status_t) pjsua_media_transports_attach(pjsua_media_transport tp[],
 }
 #endif
 
+
+PJ_DEF(void) pjsua_media_request_keyframe(pjsua_call_id call_id)
+{
+    pjsua_call *call = &pjsua_var.calls[call_id];
+    pj_status_t status;
+    unsigned i;
+
+    for (i = 0; i < call->med_cnt; ++i) {
+        pjsua_call_media *cm = &call->media[i];
+        if (cm->type != PJMEDIA_TYPE_VIDEO || !cm->strm.v.stream)
+            continue;
+
+        if (call->opt.req_keyframe_method & PJSUA_VID_REQ_KEYFRAME_SIP_INFO)
+        {
+            pjsua_msg_data msg_data;
+            const pj_str_t SIP_INFO = {"INFO", 4};
+            const char *BODY_TYPE = "application/media_control+xml";
+            const char *BODY =
+                "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
+                "<media_control><vc_primitive><to_encoder>"
+                "<picture_fast_update/>"
+                "</to_encoder></vc_primitive></media_control>";
+
+            PJ_LOG(4,(THIS_FILE, "Sending video keyframe request via SIP INFO"));
+
+            pjsua_msg_data_init(&msg_data);
+            pj_cstr(&msg_data.content_type, BODY_TYPE);
+            pj_cstr(&msg_data.msg_body, BODY);
+            status = pjsua_call_send_request(call->index, &SIP_INFO, &msg_data);
+            if (status != PJ_SUCCESS) {
+                pj_perror(3, THIS_FILE, status, "Failed requesting keyframe via SIP INFO");
+            }
+        }
+
+        if (call->opt.req_keyframe_method & PJSUA_VID_REQ_KEYFRAME_RTCP_PLI)
+        {
+            PJ_LOG(4,(THIS_FILE, "Sending video keyframe request via RTCP PLI"));
+            status = pjmedia_vid_stream_send_rtcp_pli(cm->strm.v.stream);
+            if (status != PJ_SUCCESS) {
+                pj_perror(3, THIS_FILE, status, "Failed requesting keyframe via RTCP PLI");
+            }
+        }
+    }
+}
+
+
 /* Go through the list of media in the SDP, find acceptable media, and
  * sort them based on the below criteria, and store the indexes
  * in the specified array. The criteria is as follows:

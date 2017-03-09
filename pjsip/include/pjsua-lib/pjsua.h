@@ -8158,6 +8158,8 @@ pjsua_media_transports_attach( pjsua_media_transport tp[],
 #endif
 
 
+PJ_DECL(void) pjsua_media_request_keyframe(pjsua_call_id call_id);
+
 /* end of MEDIA API */
 /**
  * @}

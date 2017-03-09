@@ -52,6 +52,7 @@ pj_bool_t showNotification(pjsua_call_id call_id);
 
 static void auto_answer_timer(int);
 static void auto_answer_timeout();
+static void arm_keyframe_timer(pjsua_call_id call_id);
 static void ringback_start(pjsua_call_id call_id);
 static void ring_start(pjsua_call_id call_id);
 static void ring_stop(pjsua_call_id call_id);
@@ -87,6 +88,18 @@ static void auto_answer_timer(int timeout_seconds)
 static void auto_answer_timeout()
 {
     exit(3);
+}
+
+static void arm_keyframe_timer(pjsua_call_id call_id)
+{
+    app_call_data *cd = &app_config.call_data[call_id];
+    pjsip_endpoint *endpt = pjsua_get_pjsip_endpt();
+    pj_time_val delay;
+
+    cd->keyframe_timer.id = call_id;
+    delay.sec = app_config.auto_keyframe;
+    delay.msec = 0;
+    pjsip_endpt_schedule_timer(endpt, &cd->keyframe_timer, &delay);
 }
 
 static void ringback_start(pjsua_call_id call_id)
@@ -185,6 +198,29 @@ static void call_timeout_callback(pj_timer_heap_t *timer_heap,
     pjsua_call_hangup(call_id, 200, NULL, &msg_data_);
 }
 
+/* Callback from timer when a keyframe should be requested.
+ */
+static void call_keyframe_timer_callback(pj_timer_heap_t *timer_heap,
+				         struct pj_timer_entry *entry)
+{
+    PJ_UNUSED_ARG(timer_heap);
+
+    pjsua_call_id call_id = entry->id;
+
+    if (call_id == PJSUA_INVALID_ID) {
+	PJ_LOG(1,(THIS_FILE, "Invalid call ID in timer callback"));
+	return;
+    }
+
+    /* Request a keyframe!  */
+    PJ_LOG(4,(THIS_FILE, "Requesting a keyframe..."));
+    pjsua_media_request_keyframe(call_id);
+
+    /* Re-arm timer */
+    entry->id = PJSUA_INVALID_ID;
+    arm_keyframe_timer(call_id);
+}
+
 /*
  * Handler when invite state has changed.
  */
@@ -210,11 +246,20 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
             pjsip_endpt_cancel_timer(endpt, &cd->timer);
         }
 
-        /* Rewind play file when hangup automatically,
-         * since file is not looped
-         */
-        if (app_config.auto_play_hangup)
-            pjsua_player_set_pos(app_config.wav_id, 0);
+	/* Cancel keyframe timer, if any */
+	if (app_config.call_data[call_id].keyframe_timer.id != PJSUA_INVALID_ID) {
+	    app_call_data *cd = &app_config.call_data[call_id];
+	    pjsip_endpoint *endpt = pjsua_get_pjsip_endpt();
+
+	    cd->keyframe_timer.id = PJSUA_INVALID_ID;
+	    pjsip_endpt_cancel_timer(endpt, &cd->keyframe_timer);
+	}
+
+	/* Rewind play file when hangup automatically,
+	 * since file is not looped
+	 */
+	if (app_config.auto_play_hangup)
+	    pjsua_player_set_pos(app_config.wav_id, 0);
 
 
         PJ_LOG(3,(THIS_FILE, "Call %d is DISCONNECTED [reason=%d (%.*s)]",
@@ -273,10 +318,19 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
             pjsip_endpt_schedule_timer(endpt, &cd->timer, &delay);
         }
 
-        if (call_info.state == PJSIP_INV_STATE_EARLY) {
-            int code;
-            pj_str_t reason;
-            pjsip_msg *msg;
+	if (call_info.state == PJSIP_INV_STATE_CONFIRMED)
+	{
+	    /* Schedule timer to request a keyframe at regular intervals */
+	    if (app_config.auto_keyframe) {
+		PJ_LOG(3,(THIS_FILE, "Auto-keyframe timer enabled every %d seconds", app_config.auto_keyframe));
+		arm_keyframe_timer(call_id);
+	    }
+	}
+
+	if (call_info.state == PJSIP_INV_STATE_EARLY) {
+	    int code;
+	    pj_str_t reason;
+	    pjsip_msg *msg;
 
             /* This can only occur because of TX or RX message */
             pj_assert(e->type == PJSIP_EVENT_TSX_STATE);
@@ -1479,8 +1533,10 @@ static pj_status_t app_init(void)
 
     /* Initialize calls data */
     for (i=0; i<PJ_ARRAY_SIZE(app_config.call_data); ++i) {
-        app_config.call_data[i].timer.id = PJSUA_INVALID_ID;
-        app_config.call_data[i].timer.cb = &call_timeout_callback;
+	app_config.call_data[i].timer.id = PJSUA_INVALID_ID;
+	app_config.call_data[i].timer.cb = &call_timeout_callback;
+	app_config.call_data[i].keyframe_timer.id = PJSUA_INVALID_ID;
+	app_config.call_data[i].keyframe_timer.cb = &call_keyframe_timer_callback;
     }
 
     /* Optionally registers WAV file */
