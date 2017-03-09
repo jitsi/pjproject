@@ -38,6 +38,7 @@ typedef struct input_result
 typedef struct app_call_data
 {
     pj_timer_entry          timer;
+    pj_timer_entry          keyframe_timer;
     pj_bool_t               ringback_on;
     pj_bool_t               ring_on;
 } app_call_data;
@@ -136,6 +137,7 @@ typedef struct pjsua_app_config
 
     unsigned                auto_answer;
     unsigned                auto_answer_timer;
+    unsigned                auto_keyframe;
     unsigned                duration;
 
 #ifdef STEREO_DEMO
