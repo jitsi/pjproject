@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -100,25 +100,26 @@ typedef struct pjsua_app_config
     pj_str_t                codec_arg[32];
     unsigned                codec_dis_cnt;
     pj_str_t                codec_dis[32];
-    pj_bool_t               null_audio;
-    unsigned                wav_count;
-    pj_str_t                wav_files[32];
-    unsigned                tone_count;
-    pjmedia_tone_desc       tones[32];
-    pjsua_conf_port_id      tone_slots[32];
-    pjsua_player_id         wav_id;
-    pjsua_conf_port_id      wav_port;
-    pj_bool_t               auto_play;
-    pj_bool_t               auto_play_hangup;
-    pj_timer_entry          auto_hangup_timer;
-    pj_bool_t               auto_loop;
-    pj_bool_t               auto_conf;
-    pj_str_t                rec_file;
-    pj_bool_t               auto_rec;
-    pjsua_recorder_id       rec_id;
-    pjsua_conf_port_id      rec_port;
-    unsigned                auto_answer;
-    unsigned                duration;
+    pj_bool_t		    null_audio;
+    unsigned		    wav_count;
+    pj_str_t		    wav_files[32];
+    unsigned		    tone_count;
+    pjmedia_tone_desc	    tones[32];
+    pjsua_conf_port_id	    tone_slots[32];
+    pjsua_player_id	    wav_id;
+    pjsua_conf_port_id	    wav_port;
+    pj_bool_t		    auto_play;
+    pj_bool_t		    auto_play_hangup;
+    pj_timer_entry	    auto_hangup_timer;
+    pj_bool_t		    auto_loop;
+    pj_bool_t		    auto_conf;
+    pj_str_t		    rec_file;
+    pj_bool_t		    auto_rec;
+    pjsua_recorder_id	    rec_id;
+    pjsua_conf_port_id	    rec_port;
+    unsigned		    auto_answer;
+    unsigned		    auto_answer_timer;
+    unsigned		    duration;
 
 #ifdef STEREO_DEMO
     pjmedia_snd_port       *snd;
