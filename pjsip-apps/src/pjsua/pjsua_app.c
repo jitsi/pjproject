@@ -52,6 +52,8 @@ pj_bool_t showNotification(pjsua_call_id call_id);
 #endif
 
 static void arm_keyframe_timer(pjsua_call_id call_id);
+static void auto_answer_timer(int);
+static void auto_answer_timeout();
 static void ringback_start(pjsua_call_id call_id);
 static void ring_start(pjsua_call_id call_id);
 static void ring_stop(pjsua_call_id call_id);
@@ -61,6 +63,7 @@ static pj_status_t app_destroy();
 static pjsua_app_cfg_t app_cfg;
 pj_str_t		    uri_arg;
 pj_bool_t		    app_running	= PJ_FALSE;
+pj_timer_entry      auto_answer_timer_cb;
 
 /*****************************************************************************
  * Configuration manipulation
@@ -79,6 +82,25 @@ static void arm_keyframe_timer(pjsua_call_id call_id)
     delay.sec = 30;
     delay.msec = 0;
     pjsip_endpt_schedule_timer(endpt, &cd->keyframe_timer, &delay);
+}
+
+static void auto_answer_timer(int timeout_seconds)
+{
+    pjsip_endpoint *endpt = pjsua_get_pjsip_endpt();
+    pj_time_val delay;
+
+    delay.sec = timeout_seconds;
+    delay.msec = 0;
+
+    auto_answer_timer_cb.id = PJSUA_INVALID_ID;
+    auto_answer_timer_cb.cb = &auto_answer_timeout;
+
+    pjsip_endpt_schedule_timer(endpt, &auto_answer_timer_cb, &delay);
+}
+
+static void auto_answer_timeout()
+{
+    exit(3);
 }
 
 static void ringback_start(pjsua_call_id call_id)
@@ -263,6 +285,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	 *  * 0: call ended normally (200)
 	 *  * 1: user refused the call (486, 600, 603, 606)
 	 *  * 2: other SIP error
+	 *  * 3: auto-answer timeout
 	 *
 	 *  See: https://en.wikipedia.org/wiki/List_of_SIP_response_codes
 	 */
@@ -365,6 +388,12 @@ static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
     ring_start(call_id);
     
     if (app_config.auto_answer > 0) {
+    // clear timeout if any
+    if (app_config.auto_answer_timer > 0) {
+        pjsip_endpoint *endpt = pjsua_get_pjsip_endpt();
+        pjsip_endpt_cancel_timer(endpt, &auto_answer_timer_cb);
+    }
+
 	pjsua_call_setting opt;
 
 	pjsua_call_setting_default(&opt);
@@ -2005,7 +2034,11 @@ pj_status_t pjsua_app_run(pj_bool_t wait_telnet_cli)
 
 	pjsua_call_make_call(current_acc, &uri_arg, &call_opt, NULL, 
 			     NULL, NULL);
-    }   
+    }
+
+    if (app_config.auto_answer_timer > 0) {
+        auto_answer_timer(app_config.auto_answer_timer);
+    }
 
     app_running = PJ_TRUE;
 

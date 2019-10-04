@@ -119,6 +119,7 @@ typedef struct pjsua_app_config
     pjsua_recorder_id	    rec_id;
     pjsua_conf_port_id	    rec_port;
     unsigned		    auto_answer;
+    unsigned		    auto_answer_timer;
     unsigned		    duration;
 
 #ifdef STEREO_DEMO
