@@ -135,6 +135,7 @@ typedef struct pjsua_app_config
     char                    dyn_rec_filename[PJ_MAXPATH];
 
     unsigned                auto_answer;
+    unsigned                auto_answer_timer;
     unsigned                duration;
 
 #ifdef STEREO_DEMO
