@@ -38,7 +38,7 @@
 #define V4L2_MAX_DEVS           4
 #define DEFAULT_WIDTH           640
 #define DEFAULT_HEIGHT          480
-#define DEFAULT_FPS             25
+#define DEFAULT_FPS             30
 #define DEFAULT_CLOCK_RATE      90000
 #define INVALID_FD              -1
 #define BUFFER_CNT              2
@@ -356,7 +356,7 @@ static pj_status_t v4l2_scan_devs(vid4lin_factory *f)
         pj_ansi_strxcpy(pdi->dev_name, dev_name, sizeof(pdi->dev_name));
         pj_ansi_strxcpy(pdi->info.name, (char*)pdi->v4l2_cap.card,
                         sizeof(pdi->info.name));
-        pj_ansi_strxcpy(pdi->info.driver, DRIVER_NAME, 
+        pj_ansi_strxcpy(pdi->info.driver, DRIVER_NAME,
                         sizeof(pdi->info.driver));
         pdi->info.dir = PJMEDIA_DIR_CAPTURE;
         pdi->info.has_callback = PJ_FALSE;
