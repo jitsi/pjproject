@@ -40,11 +40,11 @@
 #   include <Foundation/Foundation.h>
 #endif
 
-#define THIS_FILE               "sdl_dev.c"
-#define DEFAULT_CLOCK_RATE      90000
-#define DEFAULT_WIDTH           640
-#define DEFAULT_HEIGHT          480
-#define DEFAULT_FPS             25
+#define THIS_FILE		"sdl_dev.c"
+#define DEFAULT_CLOCK_RATE	90000
+#define DEFAULT_WIDTH		1280
+#define DEFAULT_HEIGHT		720
+#define DEFAULT_FPS		30
 
 typedef struct sdl_fmt_info
 {
