@@ -493,21 +493,21 @@ static pj_status_t sdl_factory_init(pjmedia_vid_dev_factory *f)
 
     ddi = &sf->dev_info[0];
     pj_bzero(ddi, sizeof(*ddi));
-    pj_ansi_strxcpy(ddi->info.name, "SDL renderer", 
+    pj_ansi_strxcpy(ddi->info.name, "SDL renderer",
                     sizeof(ddi->info.name));
     ddi->info.fmt_cnt = PJ_ARRAY_SIZE(sdl_fmts);
 
 #if PJMEDIA_VIDEO_DEV_SDL_HAS_OPENGL
     ddi = &sf->dev_info[OPENGL_DEV_IDX];
     pj_bzero(ddi, sizeof(*ddi));
-    pj_ansi_strxcpy(ddi->info.name, "SDL openGL renderer", 
+    pj_ansi_strxcpy(ddi->info.name, "SDL openGL renderer",
                     sizeof(ddi->info.name));
     ddi->info.fmt_cnt = 1;
 #endif /* PJMEDIA_VIDEO_DEV_SDL_HAS_OPENGL */
 
     for (i = 0; i < sf->dev_count; i++) {
         ddi = &sf->dev_info[i];
-        pj_ansi_strxcpy(ddi->info.driver, "SDL", 
+        pj_ansi_strxcpy(ddi->info.driver, "SDL",
                         sizeof(ddi->info.driver));
         ddi->info.dir = PJMEDIA_DIR_RENDER;
         ddi->info.has_callback = PJ_FALSE;
@@ -710,18 +710,15 @@ static pj_status_t sdl_create_window(struct sdl_stream *strm,
         if ((strm->param.flags & PJMEDIA_VID_DEV_CAP_OUTPUT_FULLSCREEN) &&
             strm->param.window_fullscreen)
         {
-            if (strm->param.window_fullscreen == PJMEDIA_VID_DEV_FULLSCREEN)
-                flags |= SDL_WINDOW_FULLSCREEN;
-            else
-                flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
         }
 
 #if PJMEDIA_VIDEO_DEV_SDL_HAS_OPENGL
         if (strm->param.rend_id == OPENGL_DEV_IDX)
             flags |= SDL_WINDOW_OPENGL;
-#endif /* PJMEDIA_VIDEO_DEV_SDL_HAS_OPENGL */   
+#endif /* PJMEDIA_VIDEO_DEV_SDL_HAS_OPENGL */
         if (use_app_win) {
-            /* Use the window supplied by the application. */       
+            /* Use the window supplied by the application. */
             strm->window = SDL_CreateWindowFrom(hwnd->info.window);
             if (!strm->window) {
                 sdl_log_err("SDL_CreateWindowFrom()");
@@ -772,18 +769,18 @@ static pj_status_t sdl_create_window(struct sdl_stream *strm,
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glEnable(GL_TEXTURE_2D);
-        
+
         /* Init the viewport */
         glViewport(0, 0, strm->param.disp_size.w, strm->param.disp_size.h);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        
+
         glOrtho(0.0, (GLdouble)strm->param.disp_size.w,
                 (GLdouble)strm->param.disp_size.h, 0.0, 0.0, 1.0);
-        
+
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        
+
         /* Create a texture */
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         glGenTextures(1, &strm->texture);
@@ -1119,17 +1116,9 @@ static pj_status_t get_cap(void *data)
             *wnd_flags |= PJMEDIA_VID_DEV_WND_RESIZABLE;
         return PJ_SUCCESS;
     } else if (cap == PJMEDIA_VID_DEV_CAP_OUTPUT_FULLSCREEN) {
-        Uint32 flag = SDL_GetWindowFlags(strm->window);
-        pjmedia_vid_dev_fullscreen_flag val = PJMEDIA_VID_DEV_WINDOWED;
-        if ((flag & SDL_WINDOW_FULLSCREEN_DESKTOP) ==
-                    SDL_WINDOW_FULLSCREEN_DESKTOP)
-        {
-             val = PJMEDIA_VID_DEV_FULLSCREEN_DESKTOP;
-        } else if ((flag & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN) {
-             val = PJMEDIA_VID_DEV_FULLSCREEN;
-        }
-        *((pjmedia_vid_dev_fullscreen_flag*)pval) = val;
-        return PJ_SUCCESS;
+	Uint32 flag = SDL_GetWindowFlags(strm->window);
+	*((pj_bool_t *)pval) = (flag & SDL_WINDOW_FULLSCREEN_DESKTOP)? PJ_TRUE: PJ_FALSE;
+	return PJ_SUCCESS;
     }
 
     return PJMEDIA_EVID_INVCAP;
@@ -1192,7 +1181,7 @@ static pj_status_t set_cap(void *data)
         status = change_format(strm, (pjmedia_format *)pval);
         if (status != PJ_SUCCESS) {
             pj_status_t status_;
-            
+
             /**
              * Failed to change the output format. Try to revert
              * to its original format.
@@ -1206,7 +1195,7 @@ static pj_status_t set_cap(void *data)
                 status = PJMEDIA_EVID_ERR;
             }
         }
-        
+
         return status;
     } else if (cap == PJMEDIA_VID_DEV_CAP_OUTPUT_RESIZE) {
         pjmedia_rect_size *new_size = (pjmedia_rect_size *)pval;
@@ -1235,37 +1224,35 @@ static pj_status_t set_cap(void *data)
         /* Re-init SDL */
         status = sdl_destroy_all(strm);
         if (status != PJ_SUCCESS)
-            return status;      
+            return status;
 
         status = sdl_create_window(strm, PJ_TRUE, sdl_info->sdl_format, hwnd);
         PJ_PERROR(4, (THIS_FILE, status,
                       "Re-initializing SDL with native window %p",
                       hwnd->info.window));
-        return status;  
+        return status;
     } else if (cap == PJMEDIA_VID_DEV_CAP_OUTPUT_FULLSCREEN) {
         Uint32 flag;
         pjmedia_vid_dev_fullscreen_flag val =
                                     *(pjmedia_vid_dev_fullscreen_flag*)pval;
 
-        flag = SDL_GetWindowFlags(strm->window);
-        if (val == PJMEDIA_VID_DEV_FULLSCREEN_DESKTOP)
+	flag = SDL_GetWindowFlags(strm->window);
+        if (*(pj_bool_t *)pval)
             flag |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-        else if (val == PJMEDIA_VID_DEV_FULLSCREEN)
-            flag |= SDL_WINDOW_FULLSCREEN;
         else
             flag &= (~SDL_WINDOW_FULLSCREEN_DESKTOP);
 
         SDL_SetWindowFullscreen(strm->window, flag);
 
-        /* Trying to restore the border after returning from fullscreen,
-         * unfortunately not sure how to put back the resizable flag.
-         */
-        if ((flag & SDL_WINDOW_FULLSCREEN)==0 &&
-            (flag & SDL_WINDOW_BORDERLESS)==0)
-        {
-            SDL_SetWindowBordered(strm->window, SDL_FALSE);
-            SDL_SetWindowBordered(strm->window, SDL_TRUE);
-        }
+	/* Trying to restore the border after returning from fullscreen,
+	 * unfortunately not sure how to put back the resizable flag.
+	 */
+	if ((flag & SDL_WINDOW_FULLSCREEN_DESKTOP)==0 &&
+	    (flag & SDL_WINDOW_BORDERLESS)==0)
+	{
+	    SDL_SetWindowBordered(strm->window, SDL_FALSE);
+	    SDL_SetWindowBordered(strm->window, SDL_TRUE);
+	}
 
         return PJ_SUCCESS;
     }
