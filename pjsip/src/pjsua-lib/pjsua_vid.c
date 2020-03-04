@@ -885,6 +885,8 @@ static pj_status_t create_vid_win(pjsua_vid_win_type type,
         vp_param.vidparam.window_hide = !show;
         vp_param.vidparam.flags |= PJMEDIA_VID_DEV_CAP_OUTPUT_WINDOW_FLAGS;
         vp_param.vidparam.window_flags = wnd_flags;
+        vp_param.vidparam.flags |= PJMEDIA_VID_DEV_CAP_OUTPUT_FULLSCREEN;
+        vp_param.vidparam.window_fullscreen = PJMEDIA_VID_DEV_FULLSCREEN_DESKTOP;
         if (wnd) {
             vp_param.vidparam.flags |= PJMEDIA_VID_DEV_CAP_OUTPUT_WINDOW;
             vp_param.vidparam.window = *wnd;
