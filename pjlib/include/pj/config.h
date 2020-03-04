@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
  *
@@ -104,7 +104,7 @@
 
 #elif defined(PJ_WIN32) || defined(_WIN32) || defined(__WIN32__) || \
         defined(WIN32) || defined(PJ_WIN64) || defined(_WIN64) || \
-        defined(WIN64) || defined(__TOS_WIN__) 
+        defined(WIN64) || defined(__TOS_WIN__)
 #   if defined(PJ_WIN64) || defined(_WIN64) || defined(WIN64)
         /*
          * Win64
@@ -303,7 +303,7 @@
 #   define PJ_HAS_PENTIUM       0
 #   define PJ_IS_LITTLE_ENDIAN  1
 #   define PJ_IS_BIG_ENDIAN     0
-                
+
 #else
 #   error "Please specify target machine."
 #endif
@@ -1502,7 +1502,7 @@ PJ_BEGIN_DECL
  * Extra suffix for the version (e.g. "-trunk"), or empty for
  * web release version.
  */
-#define PJ_VERSION_NUM_EXTRA    "-dev"
+#define PJ_VERSION_NUM_EXTRA	"-jitsi1"
 
 /**
  * PJLIB version number consists of three bytes with the following format:
