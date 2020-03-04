@@ -373,7 +373,9 @@ static pj_status_t handle_event(void *data)
         if (strm && pevent.type != PJMEDIA_EVENT_NONE) {
             pj_status_t status;
 
-            pjmedia_event_publish(NULL, strm, &pevent, 0);
+#if 0
+	    pjmedia_event_publish(NULL, strm, &pevent, 0);
+#endif
 
             switch (pevent.type) {
             case PJMEDIA_EVENT_WND_RESIZED:

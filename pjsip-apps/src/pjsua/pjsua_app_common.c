@@ -184,8 +184,7 @@ void app_config_init_video(pjsua_acc_config *acc_cfg)
     /* Note that normally GUI application will prefer a borderless
      * window.
      */
-    acc_cfg->vid_wnd_flags = PJMEDIA_VID_DEV_WND_BORDER |
-                             PJMEDIA_VID_DEV_WND_RESIZABLE;
+    acc_cfg->vid_wnd_flags = PJMEDIA_VID_DEV_WND_RESIZABLE;
     acc_cfg->vid_cap_dev = app_config.vid.vcapture_dev;
     acc_cfg->vid_rend_dev = app_config.vid.vrender_dev;
 
@@ -236,7 +235,7 @@ void app_config_init_video(pjsua_acc_config *acc_cfg)
  */
 void arrange_window(pjsua_vid_win_id wid)
 {
-#if PJSUA_HAS_VIDEO
+#if 0
     pjmedia_coord pos;
     int i, last;
 
