@@ -162,7 +162,7 @@ struct pjmedia_vid_stream
     pj_bool_t                use_ka;           /**< Stream keep-alive with non-
                                                     codec-VAD mechanism is
                                                     enabled?                */
-    unsigned                 ka_interval;      /**< The keepalive sending 
+    unsigned                 ka_interval;      /**< The keepalive sending
                                                     interval                */
     pj_time_val              last_frm_ts_sent; /**< Time of last sending
                                                     packet                  */
@@ -443,7 +443,7 @@ static pj_status_t stream_event_cb(pjmedia_event *event,
                event->type==PJMEDIA_EVENT_RX_RTCP_FB)
     {
         /* This is RX RTCP-FB event */
-        pjmedia_event_rx_rtcp_fb_data *data = 
+        pjmedia_event_rx_rtcp_fb_data *data =
                     (pjmedia_event_rx_rtcp_fb_data*)&event->data.rx_rtcp_fb;
 
         /* Check if configured to listen to the RTCP-FB type */
@@ -1475,15 +1475,15 @@ static pj_status_t decode_frame(pjmedia_vid_stream *stream,
                 new_fps.denum = ts_diff;
             }
 
-            /* Only apply the new FPS when it is >0, <=100, and increasing */
-            if (new_fps.num/new_fps.denum <= 100 &&
-                new_fps.num/new_fps.denum > 0 &&
-                new_fps.num*1.0/new_fps.denum >
-                stream->dec_max_fps.num*1.0/stream->dec_max_fps.denum)
-            {
-                pjmedia_video_format_detail *vfd;
-                vfd = pjmedia_format_get_video_format_detail(
-                                        &channel->port.info.fmt, PJ_TRUE);
+	    /* Only apply the new FPS when it is >0, <=60, and increasing */
+	    if (new_fps.num/new_fps.denum <= 60 &&
+		new_fps.num/new_fps.denum > 0 &&
+		new_fps.num*1.0/new_fps.denum >
+		stream->dec_max_fps.num*1.0/stream->dec_max_fps.denum)
+	    {
+		pjmedia_video_format_detail *vfd;
+		vfd = pjmedia_format_get_video_format_detail(
+					&channel->port.info.fmt, PJ_TRUE);
 
                 /* Update FPS in channel & stream info */
                 vfd->fps = new_fps;
@@ -1826,7 +1826,7 @@ PJ_DEF(pj_status_t) pjmedia_vid_stream_create(
     stream->use_ka = info->use_ka;
     stream->ka_interval = info->ka_cfg.ka_interval;
     stream->start_ka_count = info->ka_cfg.start_count;
-    stream->start_ka_interval = info->ka_cfg.start_interval;    
+    stream->start_ka_interval = info->ka_cfg.start_interval;
 #endif
     stream->num_keyframe = info->sk_cfg.count;
 
@@ -1844,7 +1844,7 @@ PJ_DEF(pj_status_t) pjmedia_vid_stream_create(
     }
 
     /* Create group lock */
-    status = pj_grp_lock_create_w_handler(pool, NULL, stream, 
+    status = pj_grp_lock_create_w_handler(pool, NULL, stream,
                                           &on_destroy,
                                           &stream->grp_lock);
     if (status != PJ_SUCCESS)
