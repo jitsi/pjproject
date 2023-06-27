@@ -86,3 +86,4 @@ tests/fuzz/*.o
 cov-int/
 getversion.mak
 configure.out
+/.idea/
