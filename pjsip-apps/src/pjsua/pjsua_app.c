@@ -18,8 +18,13 @@
  */
 #include "pjsua_app.h"
 #include <unistd.h>
+#include <fcntl.h>
 
 #define THIS_FILE       "pjsua_app.c"
+
+/* Jibri: DTMF FIFO IPC — must be declared before on_call_state and call_on_dtmf_callback2 */
+#define JIBRI_DTMF_FIFO_PATH "/tmp/jibri_pjsua_dtmf"
+static int dtmf_fifo_fd = -1;
 
 //#define STEREO_DEMO
 //#define TRANSPORT_ADAPTER_SAMPLE
@@ -282,6 +287,12 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
             log_call_dump(call_id);
         }
 
+	/* Jibri: close DTMF FIFO before exiting */
+	if (dtmf_fifo_fd >= 0) {
+	    close(dtmf_fifo_fd);
+	    dtmf_fifo_fd = -1;
+	}
+
 	/* Jibri: exit the application after the call is complete.
 	 * Use exit codes to communicate how the call was ended:
 	 *  * 0: call ended normally (200)
@@ -323,6 +334,16 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
             if (app_config.auto_keyframe) {
                 PJ_LOG(3,(THIS_FILE, "Auto-keyframe timer enabled every %d seconds", app_config.auto_keyframe));
                 arm_keyframe_timer(call_id);
+            }
+            /* Jibri: open DTMF FIFO for writing when call is confirmed.
+             * Blocking open is intentional — jibri's reader thread opens the
+             * read end before pjsua is launched, so this returns immediately.
+             */
+            dtmf_fifo_fd = open(JIBRI_DTMF_FIFO_PATH, O_WRONLY);
+            if (dtmf_fifo_fd >= 0) {
+                PJ_LOG(3,(THIS_FILE, "Jibri: opened DTMF FIFO"));
+            } else {
+                PJ_LOG(3,(THIS_FILE, "Jibri: failed to open DTMF FIFO"));
             }
         }
 
@@ -663,9 +684,13 @@ static void call_on_dtmf_callback(pjsua_call_id call_id, int dtmf)
 }
 */
 
-static void call_on_dtmf_callback2(pjsua_call_id call_id, 
+/* Jibri: state for *6 DTMF sequence detection */
+static int dtmf_star_pending = 0;
+static pj_time_val dtmf_star_time;
+
+static void call_on_dtmf_callback2(pjsua_call_id call_id,
                                    const pjsua_dtmf_info *info)
-{    
+{
     char duration[16];
     char method[16];
 
@@ -677,12 +702,31 @@ static void call_on_dtmf_callback2(pjsua_call_id call_id,
         break;
     case PJSUA_DTMF_METHOD_SIP_INFO:
         pj_ansi_snprintf(method, sizeof(method), "SIP INFO");
-        pj_ansi_snprintf(duration, sizeof(duration), ":duration(%d)", 
+        pj_ansi_snprintf(duration, sizeof(duration), ":duration(%d)",
                          info->duration);
         break;
-    };    
-    PJ_LOG(3,(THIS_FILE, "Incoming DTMF on call %d: %c%s, using %s method", 
+    };
+    PJ_LOG(3,(THIS_FILE, "Incoming DTMF on call %d: %c%s, using %s method",
            call_id, info->digit, duration, method));
+
+    /* Jibri: detect *6 sequence and signal jibri via named FIFO. */
+    {
+        char digit = (char)info->digit;
+        if (digit == '*') {
+            dtmf_star_pending = 1;
+            pj_gettimeofday(&dtmf_star_time);
+        } else if (digit == '6' && dtmf_star_pending) {
+            pj_time_val now;
+            pj_gettimeofday(&now);
+            PJ_TIME_VAL_SUB(now, dtmf_star_time);
+            if (now.sec < 3 && dtmf_fifo_fd >= 0) {
+                (void)write(dtmf_fifo_fd, "DTMF_COMMAND:*6\n", 16);
+            }
+            dtmf_star_pending = 0;
+        } else {
+            dtmf_star_pending = 0;
+        }
+    }
 }
 
 /*
