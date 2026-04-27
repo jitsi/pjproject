@@ -344,7 +344,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
             if (dtmf_fifo_fd >= 0) {
                 PJ_LOG(3,(THIS_FILE, "Jibri: opened DTMF FIFO"));
             } else {
-                PJ_LOG(2,(THIS_FILE, "Jibri: failed to open DTMF FIFO"));
+                PJ_LOG(3,(THIS_FILE, "Jibri: failed to open DTMF FIFO: %s", strerror(errno)));
             }
         }
 
