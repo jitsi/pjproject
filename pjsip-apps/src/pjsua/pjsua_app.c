@@ -23,7 +23,8 @@
 #define THIS_FILE       "pjsua_app.c"
 
 /* Jibri: DTMF FIFO IPC — must be declared before on_call_state and call_on_dtmf_callback2 */
-#define JIBRI_DTMF_FIFO_PATH "/tmp/jibri_pjsua_dtmf"
+#define JIBRI_DTMF_FIFO_PATH_DEFAULT "/tmp/jibri_pjsua_dtmf"
+static const char *dtmf_fifo_path = NULL;
 static int dtmf_fifo_fd = -1;
 
 //#define STEREO_DEMO
@@ -339,7 +340,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
              * Blocking open is intentional — jibri's reader thread opens the
              * read end before pjsua is launched, so this returns immediately.
              */
-            dtmf_fifo_fd = open(JIBRI_DTMF_FIFO_PATH, O_WRONLY);
+            dtmf_fifo_fd = open(dtmf_fifo_path, O_WRONLY);
             if (dtmf_fifo_fd >= 0) {
                 PJ_LOG(3,(THIS_FILE, "Jibri: opened DTMF FIFO"));
             } else {
@@ -1498,6 +1499,12 @@ static pj_status_t app_init(void)
     unsigned i;
     pj_pool_t *tmp_pool;
     pj_status_t status;
+
+    /** Jibri: resolve DTMF FIFO path **/
+    dtmf_fifo_path = getenv("JIBRI_DTMF_FIFO_PATH");
+    if (!dtmf_fifo_path)
+        dtmf_fifo_path = JIBRI_DTMF_FIFO_PATH_DEFAULT;
+    PJ_LOG(3,(THIS_FILE, "Jibri: DTMF FIFO path: %s", dtmf_fifo_path));
 
     /** Create pjsua **/
     status = pjsua_create();
