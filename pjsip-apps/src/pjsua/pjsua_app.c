@@ -685,7 +685,7 @@ static void call_on_dtmf_callback(pjsua_call_id call_id, int dtmf)
 }
 */
 
-/* Jibri: state for *6 DTMF sequence detection */
+/* Jibri: state for *6/*7 DTMF sequence detection */
 static int dtmf_star_pending = 0;
 static pj_time_val dtmf_star_time;
 
@@ -710,18 +710,22 @@ static void call_on_dtmf_callback2(pjsua_call_id call_id,
     PJ_LOG(3,(THIS_FILE, "Incoming DTMF on call %d: %c%s, using %s method",
            call_id, info->digit, duration, method));
 
-    /* Jibri: detect *6 sequence and signal jibri via named FIFO. */
+    /* Jibri: detect *6 and *7 sequences and signal jibri via named FIFO. */
     {
         char digit = (char)info->digit;
         if (digit == '*') {
             dtmf_star_pending = 1;
             pj_gettimeofday(&dtmf_star_time);
-        } else if (digit == '6' && dtmf_star_pending) {
+        } else if ((digit == '6' || digit == '7') && dtmf_star_pending) {
             pj_time_val now;
             pj_gettimeofday(&now);
             PJ_TIME_VAL_SUB(now, dtmf_star_time);
             if (now.sec < 3 && dtmf_fifo_fd >= 0) {
-                (void)write(dtmf_fifo_fd, "DTMF_COMMAND:*6\n", 16);
+                if (digit == '6') {
+                    (void)write(dtmf_fifo_fd, "DTMF_COMMAND:*6\n", 16);
+                } else {
+                    (void)write(dtmf_fifo_fd, "DTMF_COMMAND:*7\n", 16);
+                }
             }
             dtmf_star_pending = 0;
         } else {
