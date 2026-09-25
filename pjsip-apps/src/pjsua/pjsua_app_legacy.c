@@ -1924,6 +1924,8 @@ void legacy_main(void)
         call_opt.aud_cnt = app_config.aud_cnt;
         call_opt.vid_cnt = app_config.vid.vid_cnt;
         call_opt.txt_cnt = app_config.txt_cnt;
+        /* Jibri: see JIBRI_CALL_FLAGS */
+        call_opt.flag |= JIBRI_CALL_FLAGS;
 
         switch (menuin[0]) {
 

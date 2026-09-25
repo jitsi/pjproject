@@ -22,6 +22,16 @@
 
 PJ_BEGIN_DECL
 
+/* Jibri: call flags applied to every call pjsua makes or answers.
+ * Disable pjsua-lib's audio/video synchronisation: jibri plays pjsua's audio
+ * into ALSA and grabs its video window separately, so syncing them here has
+ * no benefit. It also misbehaves with some peers: a bogus sync target of
+ * ~7000 s pushed the video stream's minimal delay to hundreds of frames and
+ * froze the incoming video.
+ */
+#define JIBRI_CALL_FLAGS    PJSUA_CALL_NO_MEDIA_SYNC
+
+
 #define current_acc     pjsua_acc_get_default()
 
 #define PJSUA_APP_NO_LIMIT_DURATION     (int)0x7FFFFFFF

@@ -500,6 +500,8 @@ static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
         opt.aud_cnt = app_config.aud_cnt;
         opt.vid_cnt = app_config.vid.vid_cnt;
         opt.txt_cnt = app_config.txt_cnt;
+        /* Jibri: see JIBRI_CALL_FLAGS */
+        opt.flag |= JIBRI_CALL_FLAGS;
 
         pjsua_call_answer2(call_id, &opt, app_config.auto_answer, NULL,
                            NULL);
@@ -2373,6 +2375,8 @@ static pj_status_t app_init(void)
     call_opt.aud_cnt = app_config.aud_cnt;
     call_opt.vid_cnt = app_config.vid.vid_cnt;
     call_opt.txt_cnt = app_config.txt_cnt;
+    /* Jibri: see JIBRI_CALL_FLAGS */
+    call_opt.flag |= JIBRI_CALL_FLAGS;
     if (app_config.enable_loam) {
         call_opt.flag |= PJSUA_CALL_NO_SDP_OFFER;
     }
@@ -2448,6 +2452,8 @@ pj_status_t pjsua_app_run(pj_bool_t wait_telnet_cli)
         call_opt.aud_cnt = app_config.aud_cnt;
         call_opt.vid_cnt = app_config.vid.vid_cnt;
         call_opt.txt_cnt = app_config.txt_cnt;
+        /* Jibri: see JIBRI_CALL_FLAGS */
+        call_opt.flag |= JIBRI_CALL_FLAGS;
 
         pjsua_call_make_call(current_acc, &uri_arg, &call_opt, NULL,
                              NULL, NULL);
