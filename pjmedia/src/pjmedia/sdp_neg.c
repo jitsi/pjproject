@@ -1843,6 +1843,15 @@ static int find_new_pt(const pt_to_codec_map *pt_to_codec,
  * This method will assign PT numbers for the codecs based on the mapping
  * that we have recorded, and update the mapping.
  */
+/* Payload type within the dynamic range covered by the PT map arrays.
+ * Backport of the bounds check from upstream 673b978a (CVE-2026-57159):
+ * checking only the lower bound let e.g. "a=rtpmap:65535" index past them.
+ */
+static pj_bool_t is_dynamic_pt(unsigned pt)
+{
+    return pt >= START_DYNAMIC_PT && pt < START_DYNAMIC_PT + DYNAMIC_PT_SIZE;
+}
+
 static pj_status_t assign_pt_and_update_map(pj_pool_t *pool,
                                             pjmedia_sdp_neg *neg,
                                             pjmedia_sdp_session *sess,
@@ -1908,7 +1917,7 @@ static pj_status_t assign_pt_and_update_map(pj_pool_t *pool,
 
             /* We only need to handle mapping for dynamic PT */
             pt = pj_strtoul(&rtpmap.pt);
-            if (pt < START_DYNAMIC_PT)
+            if (!is_dynamic_pt(pt))
                 continue;
 
             if (med_type == PJMEDIA_TYPE_AUDIO) {
@@ -2029,7 +2038,7 @@ static pj_status_t assign_pt_and_update_map(pj_pool_t *pool,
 
             /* We only need to handle mapping for dynamic PT */
             pt = pj_strtoul(&fmtp.fmt);
-            if (pt < START_DYNAMIC_PT)
+            if (!is_dynamic_pt(pt))
                 continue;
 
             new_pt = pt_change[pt - START_DYNAMIC_PT];
@@ -2046,7 +2055,7 @@ static pj_status_t assign_pt_and_update_map(pj_pool_t *pool,
             unsigned pt, new_pt = 0;
 
             pt = pj_strtoul(&sdp_m->desc.fmt[j]);
-            if (pt < START_DYNAMIC_PT)
+            if (!is_dynamic_pt(pt))
                  continue;
 
             new_pt = pt_change[pt - START_DYNAMIC_PT];
