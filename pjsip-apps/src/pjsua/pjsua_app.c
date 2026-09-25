@@ -94,7 +94,7 @@ static void auto_answer_timer(int timeout_seconds)
 
 static void auto_answer_timeout()
 {
-    exit(3);
+    _exit(3);
 }
 
 static void arm_keyframe_timer(pjsua_call_id call_id)
@@ -344,6 +344,12 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	}
 
 	/* Jibri: exit the application after the call is complete.
+	 * _exit() rather than exit(): this runs on a pjsip worker thread
+	 * while the main thread is blocked reading the console on stdin and
+	 * holds the stdin lock. exit() flushes all stdio streams, and with
+	 * glibc >= 2.39 that waits for the stdin lock, so the process never
+	 * terminated. The log is written with write(2) and stdout goes to
+	 * /dev/null, so nothing needs flushing.
 	 * Use exit codes to communicate how the call was ended:
 	 *  * 0: call ended normally (200)
 	 *  * 1: user refused the call (486, 600, 603, 606)
@@ -353,14 +359,14 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	 *  See: https://en.wikipedia.org/wiki/List_of_SIP_response_codes
 	 */
 	if (call_info.last_status == 200) {
-	    exit(0);
+	    _exit(0);
 	} else if (call_info.last_status == 486 ||
 	           call_info.last_status == 600 ||
 	           call_info.last_status == 603 ||
 	           call_info.last_status == 606) {
-            exit(1);
+            _exit(1);
         } else {
-            exit(2);
+            _exit(2);
         }
 
     } else {
