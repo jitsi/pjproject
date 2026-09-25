@@ -1862,7 +1862,7 @@ static pj_status_t ffmpeg_codec_decode_whole(pjmedia_vid_codec *codec,
     ffmpeg_private *ff = (ffmpeg_private*)codec->codec_data;
     AVFrame avframe;
     AVPacket avpacket;
-    int err, got_picture;
+    int err, got_picture = PJ_FALSE;
 
     /* Check if decoder has been opened */
     PJ_ASSERT_RETURN(ff->dec_ctx, PJ_EINVALIDOP);
